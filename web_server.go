@@ -3,13 +3,26 @@ package parser
 import (
   "fmt"
   "github.com/labstack/echo"
+  "html/template"
+  "io"
   "net/http"
   "strconv"
 )
 
+type TemplateRenderer struct {
+  templates *template.Template
+}
+
+// Render renders a template document
+func (t *TemplateRenderer) Render(w io.Writer, name string, c echo.Context) error {
+  return t.templates.ExecuteTemplate(w, name, nil)
+}
+
 func (p *Parser) StartWebServer(port int) {
 
   e := echo.New()
+
+  e.GET("/", p.get_index)
 
   // Получение списка новостей
   e.GET("/api/news/:offset/:limit/", p.api_get_news_list)
@@ -27,6 +40,10 @@ func (p *Parser) StartWebServer(port int) {
 
 }
 
+func (p *Parser) get_index(c echo.Context) error {
+  return c.File("src/github.com/parser/public/index.html")
+}
+
 func (p *Parser) api_get_news_list(c echo.Context) error {
 
   offset, err := strconv.Atoi(c.Param("offset"))
@@ -38,7 +55,7 @@ func (p *Parser) api_get_news_list(c echo.Context) error {
     limit = 15
   }
 
-  sql := fmt.Sprintf("select * from news limit %d,%d", offset, limit)
+  sql := fmt.Sprintf("select * from news order by id desc limit %d,%d", offset, limit)
 
   res, err := p.query(sql)
   if err != nil {
