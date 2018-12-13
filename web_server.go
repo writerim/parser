@@ -1,169 +1,246 @@
 package parser
 
 import (
-  "fmt"
-  "github.com/labstack/echo"
-  "html/template"
-  "io"
-  "net/http"
-  "strconv"
+	"encoding/json"
+	"fmt"
+	"github.com/labstack/echo"
+	"html/template"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 type TemplateRenderer struct {
-  templates *template.Template
+	templates *template.Template
 }
 
 // Render renders a template document
 func (t *TemplateRenderer) Render(w io.Writer, name string, c echo.Context) error {
-  return t.templates.ExecuteTemplate(w, name, nil)
+	return t.templates.ExecuteTemplate(w, name, nil)
 }
 
 func (p *Parser) StartWebServer(port int) {
 
-  e := echo.New()
+	e := echo.New()
 
-  e.GET("/", p.get_index)
-  e.GET("/js/:file", p.get_js)
+	e.GET("/", p.get_index)
+	e.GET("/js/:file", p.get_js)
+	e.GET("/api/news/", p.api_get_news)
+	e.GET("/api/rule/", p.api_get_rule)
+	e.POST("/api/rule/:id", p.api_set_rule)
 
-  // Получение списка новостей
-  e.GET("/api/news/:offset/:limit/", p.api_get_news_list)
-
-  // Получение списка значений по свойствам
-  // e.GET("/api/news_attrs_value/:offset/:limit/", p.api_get_news_attrs_value_list)
-
-  // Получение списка по заголовку
-  e.GET("/api/news/find/:str_find/", p.api_get_finden_news)
-
-  // Получение все ресурсов для парсинга
-  e.GET("/api/source/:offset/:limit/", p.api_get_source_list)
-
-  // // Получение правил для ресурса
-  e.GET("/api/news_rule_list/", p.api_get_rules)
-
-  e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
 
 }
 
 func (p *Parser) get_index(c echo.Context) error {
-  return c.File("src/github.com/parser/public/index.html")
+	return c.File("src/github.com/writerim/parser/public/index.html")
 }
 
 func (p *Parser) get_js(c echo.Context) error {
-  return c.File(fmt.Sprintf("src/github.com/parser/public/js/%s", c.Param("file")))
+	return c.File(fmt.Sprintf("src/github.com/writerim/parser/public/js/%s", c.Param("file")))
 }
 
-func (p *Parser) api_get_news_list(c echo.Context) error {
+func (p *Parser) get_all_rules() []Rules {
+	rules := []Rules{}
 
-  offset, err := strconv.Atoi(c.Param("offset"))
-  if err != nil {
-    offset = 0
-  }
-  limit, err := strconv.Atoi(c.Param("limit"))
-  if err != nil {
-    limit = 15
-  }
+	res, err := p.query("select * from rules")
+	if err != nil {
+		return rules
+	}
 
-  sql := fmt.Sprintf("select * from news order by id desc limit %d,%d", offset, limit)
+	defer res.Close()
 
-  res, err := p.query(sql)
-  if err != nil {
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
-
-  news := []News{}
-
-  defer res.Close()
-
-  for res.Next() {
-    news_item := News{}
-    err = res.Scan(&news_item.Id, &news_item.Title, &news_item.Img)
-    if err != nil {
-      return c.JSON(http.StatusOK, []News{})
-    }
-    news = append(news, news_item)
-  }
-
-  return c.JSON(http.StatusOK, news)
+	for res.Next() {
+		rule := Rules{}
+		res.Scan(&rule.Id,
+			&rule.Name,
+			&rule.Link,
+			&rule.MainPath,
+			&rule.ImgPath,
+			&rule.ImgAttr,
+			&rule.TitlePath,
+			&rule.HrefPath,
+			&rule.DescPath)
+		rules = append(rules, rule)
+	}
+	return rules
 }
 
-func (p *Parser) api_get_finden_news(c echo.Context) error {
+func (p *Parser) get_all_news() []News {
+	news := []News{}
 
-  sql := fmt.Sprintf("select * from news where title like '%%%s%%'", c.Param("str_find"))
+	res, err := p.query("select * from news")
+	if err != nil {
+		return news
+	}
 
-  res, err := p.query(sql)
-  if err != nil {
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
+	defer res.Close()
 
-  news := []News{}
-
-  defer res.Close()
-
-  for res.Next() {
-    news_item := News{}
-    err = res.Scan(&news_item.Id, &news_item.Title, &news_item.Img)
-    if err != nil {
-      return c.JSON(http.StatusOK, []News{})
-    }
-    news = append(news, news_item)
-  }
-
-  return c.JSON(http.StatusOK, news)
+	for res.Next() {
+		news_item := News{}
+		res.Scan(&news_item.Id,
+			&news_item.Title,
+			&news_item.Img)
+		news = append(news, news_item)
+	}
+	return news
 }
 
-func (p *Parser) api_get_source_list(c echo.Context) error {
-
-  offset, err := strconv.Atoi(c.Param("offset"))
-  if err != nil {
-    offset = 0
-  }
-  limit, err := strconv.Atoi(c.Param("limit"))
-  if err != nil {
-    limit = 15
-  }
-
-  sql := fmt.Sprintf("select * from source_list limit %d,%d", offset, limit)
-
-  res, err := p.query(sql)
-  if err != nil {
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
-
-  sources := []SourceList{}
-
-  defer res.Close()
-
-  for res.Next() {
-    source := SourceList{}
-    err = res.Scan(&source.Id, &source.Name, &source.Href)
-    if err != nil {
-      return c.JSON(http.StatusOK, []SourceList{})
-    }
-    sources = append(sources, source)
-  }
-
-  return c.JSON(http.StatusOK, sources)
+func (p *Parser) api_get_rule(c echo.Context) error {
+	return c.JSON(http.StatusCreated, p.get_all_rules())
 }
 
-func (p *Parser) api_get_rules(c echo.Context) error {
+func (p *Parser) api_get_news(c echo.Context) error {
+	return c.JSON(http.StatusCreated, p.get_all_news())
+}
 
-  res, err := p.query("select * from attrs_rule_list")
-  if err != nil {
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
+func (p *Parser) api_set_rule(c echo.Context) error {
 
-  attrs := []Rules{}
+	id, err := strconv.Atoi(c.Param("id"))
+	method := c.FormValue("_method")
 
-  defer res.Close()
+	if method == "DELETE" {
 
-  for res.Next() {
-    attr := Rules{}
-    err = res.Scan(&attr.Id, &attr.NewsAttrs, &attr.SourceListId, &attr.Rule, &attr.GetAttr, &attr.IsMain, &attr.IsUnique)
-    if err != nil {
-      return c.JSON(http.StatusOK, []Rules{})
-    }
-    attrs = append(attrs, attr)
-  }
+		if err != nil {
+			return nil
+		}
+		del_sql := fmt.Sprintf("delete from rules where id = %d", id)
+		res, err := p.query(del_sql)
+		if err == nil {
+			res.Close()
+			return c.JSON(http.StatusCreated, Rules{})
+		}
+		return p.get_rule_by_id(id, c)
+	}
 
-  return c.JSON(http.StatusOK, attrs)
+	model := c.FormValue("model")
+
+	rule := Rules{}
+
+	if err := json.Unmarshal([]byte(model), &rule); err != nil {
+		return nil
+	}
+
+	if rule.Id != 0 {
+
+		up_sql := fmt.Sprintf(`
+			update rules set 
+			name='%s',
+			link='%s',
+			main_path='%s',
+			img_path='%s',
+			img_attr='%s',
+			title_path='%s',
+			href_path='%s',
+			desc_path='%s'
+			where id = %d
+		`, strings.Replace(rule.Name, "'", "\\'", -1),
+			strings.Replace(rule.Link, "'", "\\'", -1),
+			strings.Replace(rule.MainPath, "'", "\\'", -1),
+			strings.Replace(rule.ImgPath, "'", "\\'", -1),
+			strings.Replace(rule.ImgAttr, "'", "\\'", -1),
+			strings.Replace(rule.TitlePath, "'", "\\'", -1),
+			strings.Replace(rule.HrefPath, "'", "\\'", -1),
+			strings.Replace(rule.DescPath, "'", "\\'", -1),
+			rule.Id)
+		res, err := p.query(up_sql)
+		if err != nil {
+			return c.JSON(http.StatusCreated, Rules{})
+		}
+		defer res.Close()
+		return p.get_rule_by_id(rule.Id, c)
+	}
+
+	insert_sql := fmt.Sprintf(`insert into rules
+		(name, link, main_path, img_path, img_attr, title_path, href_path, desc_path) 
+		values('%s','%s','%s','%s','%s','%s','%s','%s')`,
+		strings.Replace(rule.Name, "'", "\\'", -1),
+		strings.Replace(rule.Link, "'", "\\'", -1),
+		strings.Replace(rule.MainPath, "'", "\\'", -1),
+		strings.Replace(rule.ImgPath, "'", "\\'", -1),
+		strings.Replace(rule.ImgAttr, "'", "\\'", -1),
+		strings.Replace(rule.TitlePath, "'", "\\'", -1),
+		strings.Replace(rule.HrefPath, "'", "\\'", -1),
+		strings.Replace(rule.DescPath, "'", "\\'", -1))
+
+	res, err := p.query(insert_sql)
+	if err != nil {
+		return nil
+	}
+	res.Close()
+
+	res, err = p.query("SELECT LAST_INSERT_ID()")
+	if err != nil {
+		return nil
+	}
+	defer res.Close()
+	res.Next()
+	id_add := 0
+	res.Scan(&id_add)
+
+	return p.get_rule_by_id(id_add, c)
+}
+
+func (p *Parser) add_news(news News) News {
+	insert_sql := fmt.Sprintf(`insert into news (title, img) values('%s','%s')`,
+		strings.Replace(news.Title, "'", "\\'", -1),
+		strings.Replace(news.Img, "'", "\\'", -1))
+
+	res, err := p.query(insert_sql)
+	if err != nil {
+		return News{}
+	}
+	res.Close()
+
+	res, err = p.query("SELECT LAST_INSERT_ID()")
+	if err != nil {
+		return News{}
+	}
+	defer res.Close()
+	res.Next()
+	id_add := 0
+	res.Scan(&id_add)
+
+	return p.news_by_id(id_add)
+}
+
+func (p *Parser) news_by_id(id int) News {
+	sql := fmt.Sprintf("select * from news where id = %d", id)
+	res, err := p.query(sql)
+	if err != nil {
+		return News{}
+	}
+	defer res.Close()
+
+	news := News{}
+	res.Next()
+	res.Scan(&news.Id, &news.Title,
+		&news.Img)
+	defer res.Close()
+	return news
+}
+
+func (p *Parser) get_rule_by_id(id int, c echo.Context) error {
+	sql := fmt.Sprintf("select * from rule where id = %s", id)
+	res, err := p.query(sql)
+	if err != nil {
+		return nil
+	}
+	defer res.Close()
+
+	rule := Rules{}
+	res.Next()
+	res.Scan(&rule.Id, &rule.Name,
+		&rule.Link,
+		&rule.MainPath,
+		&rule.ImgPath,
+		&rule.ImgAttr,
+		&rule.TitlePath,
+		&rule.HrefPath,
+		&rule.DescPath)
+
+	return c.JSON(http.StatusCreated, rule)
+
 }

@@ -1,219 +1,302 @@
-var partition_size = 15
+Backbone.emulateHTTP = true;
+Backbone.emulateJSON = true;
 
-//////////////////////
-//   MODELS
-//////////////////////
-
-
-// Этот вид отвечает за готовность всех моделей
-var READY_STAT = Backbone.Model.extend({
+var NEWS_ITEM = Backbone.Model.extend({
   defaults : {
-    news_collect : false,
-    sources_collect : false,
-    news_attrs_value_collect : false,
-    news_attrs_collection : false,
-    rules : false
+    id : 0,
+    title : "",
+    img : ""
   },
-  is_ready : function(){
-    return this.get('news_collect') &&
-    this.get('sources_collect') &&
-    this.get('news_attrs_value_collect') && 
-    this.get('news_attrs_collection') &&
-    this.get('rules')
+  url : function(){
+    return "/api/news/" + this.get('id')
+  },
+
+  get_img : function(){
+
+    var reg = new RegExp(/style=\"(.*)\"/g)
+
+    if( !reg.test(this.get('img')) ){
+      return $('<div/>').append(
+        $('<img/>').attr('src',this.get('img'))
+      ).html()
+    }
   }
+})
+
+var NEWS = Backbone.Collection.extend({
+  model : NEWS_ITEM,
+  url : "/api/news/"
 })
 
 
 var RULE = Backbone.Model.extend({
   defaults : {
     id : 0,
-    news_attr_id : 0,
-    source_list_id : 0,
-    rule : "",
-    get_attr : "",
-    is_main : 0,
-    is_unique : 0
-  }
-})
-
-var NEWS = Backbone.Model.extend({
-  defaults : {
-    id : 0,
-    source_id : 0,
-    title : ""
-  }
-})
-
-var NEWS_ATTRS_VALUE = Backbone.Model.extend({
-  defaults : {
-    id : 0,
-    news_id : 0,
-    news_attrs_id : 0,
-    value : ""
-  }
-})
-
-var NEWS_ATTRS = Backbone.Model.extend({
-  defaults : {
-    id : 0,
-    ident : "",
-    name : ""
-  }
-})
-
-var SOURCE_MODEL = Backbone.Model.extend({
-  defaults : {
-    id : 0,
     name : "",
-    href : ""
+    link : "",
+    main_path : "",
+    img_path : "",
+    img_attr : "",
+    title_path : "",
+    href_path : "",
+    desc_path : "",
+  },
+
+  url : function(){
+    return "/api/rule/" + this.get('id')
+  },
+
+
+  validate : function(){
+    if( this.get('name') == this.defaults.name ){
+      return "name empty"
+    }
+    if( this.get('link') == this.defaults.link ){
+      return "link empty"
+    }
+    if( this.get('main_path') == this.defaults.main_path ){
+      return "main_path empty"
+    }
+    if( this.get('img_path') == this.defaults.img_path ){
+      return "img_path empty"
+    }
+    if( this.get('title_path') == this.defaults.title_path ){
+      return "title_path empty"
+    }
+    if( this.get('desc_path') == this.defaults.desc_path ){
+      return "desc_path empty"
+    }
   }
 })
 
-
-
-//////////////////////
-//   COLLECTIONS
-//////////////////////
-
-var SOURCE_COLLECTION = Backbone.Collection.extend({
-  model : SOURCE_MODEL,
-  url : "/api/source/0/1000/" // TODO Пока так
-})
 
 var RULES = Backbone.Collection.extend({
   model : RULE,
-  url : "/api/news_rule_list/"
+  url : "/api/rule/"
 })
 
-var NEWS_ATTRS_COLLECTION = Backbone.Collection.extend({
-  model : NEWS_ATTRS,
-  url : "/api/news_attrs/"
-})
+var MODAL_MORE_NEWS = Backbone.View.extend({
+  template : "#more_view_news",
 
-var NEWS_ATTRS_VALUE_COLLECTION = Backbone.Collection.extend({
-  model : NEWS_ATTRS_VALUE,
-  url : function(){
-    return "/api/news_attrs_value/0/" + ( this.length + partition_size ) + "/"
-  }
-})
-
-var LIST_NEWS = Backbone.Collection.extend({ 
-  model : NEWS,
-  url : function(){
-    return "/api/news/0/" + ( news_collect.length + partition_size ) + "/"
-  }
-})
-
-
-
-
-
-
-
-
-//////////////////////
-//   VIEWS
-//////////////////////
-
-
-
-var LIST_RULES = Backbone.View.extend({
-  el : "#rules",
-
-  template : "#rules_tpl",
-
-  collection : new SOURCE_COLLECTION,
-
-  initialize : function( collection ){
-    this.collection = collection
-    this.listenTo( this.collection , "sync" , this.render )
+  initialize : function( news ){
+    this.model = news
     this.render()
   },
 
   render : function(){
-    var tpl_c = _.template($(this.template).html())
-    $(this.$el).empty().append(tpl_c({
-      sources : this.collection
-    }))
+    var tpl_c = _.template( $(this.template).html() )
+    this.$el = $(
+      tpl_c({
+        news : this.model
+      })
+    ).modal('show')
   }
 })
 
 
+var NEWS_LIST = Backbone.View.extend({
+  el : "#news_list",
 
-var LIST_NEWS_VIEW = Backbone.View.extend({
-  el : "#list_news",
+  template : "#news_list_tpl",
 
-  template : "#list_news_tpl",
+  collection : new NEWS,
 
-  collection : new LIST_NEWS,
-
-  initialize : function( news , attrs , attrs_value, rules , sources ){
+  initialize: function( news ){
     this.collection = news
-    this.attrs = attrs
-    this.attrs_value = attrs_value
-    this.rules = rules
-    this.sources = sources
     this.listenTo( this.collection , "sync" , this.render )
-    this.listenTo( this.attrs , "sync" , this.render )
-    this.listenTo( this.attrs_value , "sync" , this.render )
-    this.listenTo( this.rules , "sync" , this.render )
-    this.listenTo( this.sources , "sync" , this.render )
     this.render()
   },
 
   render : function(){
-    var tpl_c = _.template($(this.template).html())
-    $(this.$el).empty().append(tpl_c({
-      news : this.collection,
-      attrs : this.attrs,
-      rules : this.rules,
-      sources : this.sources,
-      attrs_value : this.attrs_value
-    }))
+    var tpl_c = _.template( $(this.template).html())
+    $(this.$el).empty().append(
+      tpl_c({
+        news : this.collection
+      })
+    )
   },
 
   events : {
-    "click #more_news" : function(){
-      var self = this
-      this.collection.fetch({ 
-        success : function(){
-          self.attrs_value.fetch({ url : "/api/news_attrs_value/0/" + ( self.collection.length + partition_size ) + "/" })
-        } 
+    "click .more_view_news" : function( e ){
+      var cid = $(e.target).attr('id')
+      var model = this.collection.get(cid)
+      if( typeof model != "undefined" ){
+        new MODAL_MORE_NEWS( model )
+      }
+    }
+  }
+})
+
+
+var RULE_MODAL = Backbone.View.extend({
+  template : "#rule_modal_tpl",
+
+  initialize : function( rule , rules ){
+
+    this.model = rule
+    this.collection = rules
+
+    this.listenTo( this.model , "change" , this.__btn_save_e)
+
+    this.render()
+
+  },
+
+  __btn_save_e : function(){
+    if( this.model.isValid() ){
+      $("#save").removeClass('btn-disabled').addClass('btn-success')
+    }else{
+      $("#save").addClass('btn-disabled').removeClass('btn-success')
+    }
+  },
+
+  render : function(){
+    var self = this
+    var tpl_c = _.template( $(this.template).html() )
+    this.$el = $(
+      tpl_c({
+        rule : this.model
       })
+    ).modal('show')
+
+    $(this.$el).on('shown.bs.modal' , function(){
+      self.__btn_save_e()
+    }).on('hidden.bs.modal' , function(){
+      $(this).remove()
+      self.collection.fetch()
+    })
+  },
+
+  events : {
+    "keyup #name" : function( e ){
+      this.model.set('name' , $(e.target).val() )
+    },
+    "keyup #link" : function( e ){
+      this.model.set('link' , $(e.target).val() )
+    },
+    "keyup #main_path" : function( e ){
+      this.model.set('main_path' , $(e.target).val() )
+    },
+    "keyup #img_path" : function( e ){
+      this.model.set('img_path' , $(e.target).val() )
+    },
+    "keyup #img_attr" : function( e ){
+      this.model.set('img_attr' , $(e.target).val() )
+    },
+    "keyup #title_path" : function( e ){
+      this.model.set('title_path' , $(e.target).val() )
+    },
+    "keyup #href_path" : function( e ){
+      this.model.set('href_path' , $(e.target).val() )
+    },
+    "keyup #desc_path" : function( e ){
+      this.model.set('desc_path' , $(e.target).val() )
+    },
+    "click #is_img_attr" : function( e ){
+      var action = $(e.target).prop('checked') ? "show" : "hide"
+      $('#img_attr').closest('.form-group')[action]()
+    },
+    "click #is_blank" : function( e ){
+      var action = $(e.target).prop('checked') ? "show" : "hide"
+      $('#href_path').closest('.form-group')[action]()
+    },
+    "click #save" : function( e ){
+      this.model.save()
+      $(this.$el).modal('hide')
+    }
+  }
+})
+
+var RULE_MODAL_DEL = Backbone.View.extend({
+
+  template : "#rules_delete_modal",
+
+  initialize : function( model , collection ){
+
+    this.model = model
+    this.collection = collection
+
+    this.render()
+
+  },
+  render : function(){
+    var self = this
+    var tpl_c = _.template( $(this.template).html() )
+    this.$el = $(
+      tpl_c({
+        rule : this.model
+      })
+    ).modal('show')
+
+    $(this.$el).on('hidden.bs.modal' , function(){
+      $(this).remove()
+      self.collection.fetch()
+    })
+  },
+
+  events : {
+    "click #delete" : function(){
+      this.model.destroy()
+      $(this.$el).modal('hide')
     }
   }
 })
 
 
 
-//////////////////////
-//   BODY
-//////////////////////
+var RULES_LIST = Backbone.View.extend({
+  el : "#list_rules",
+
+  template : "#list_rules_tpl",
+
+  collection : new RULES,
+
+  initialize: function( news ){
+    this.collection = news
+    this.listenTo( this.collection , "sync" , this.render )
+    this.render()
+  },
+
+  render : function(){
+    var tpl_c = _.template( $(this.template).html())
+    $(this.$el).empty().append(
+      tpl_c({
+        news : this.collection
+      })
+    )
+  },
+
+  events : {
+    "click #add_rule" : function(){
+      new RULE_MODAL( new RULE  , this.collection)
+    },
+
+    "click .delete_rule" : function(e){
+      var cid = $(e.target).closest('li').attr('id')
+      var model = this.collection.get(cid)
+      if( typeof model != "undefined" ){
+        new RULE_MODAL_DEL( model  , this.collection)
+      }
+    },
+
+    "click .edit_rule" : function(e){
+      var cid = $(e.target).closest('li').attr('id')
+      var model = this.collection.get(cid)
+      if( typeof model != "undefined" ){
+        new RULE_MODAL( model  , this.collection)
+      }
+    }
+  }
+})
 
 
+var news_collection = new NEWS()
 
-var news_collect = new LIST_NEWS
-var sources_collect = new SOURCE_COLLECTION
-var news_attrs_value_collect = new NEWS_ATTRS_VALUE_COLLECTION
-var news_attrs_collection = new NEWS_ATTRS_COLLECTION
 var rules = new RULES
-
-
-var ready_stat = new READY_STAT
+rules.fetch()
+news_collection.fetch ()
 
 $(document).ready(function(){
-
-  sources_collect.fetch({ success : function(){ ready_stat.set('sources_collect', true ) }})
-  news_collect.fetch({ success : function(){  ready_stat.set('news_collect', true ) } })
-  news_attrs_collection.fetch({ success : function(){  ready_stat.set('news_attrs_collection', true )  } })
-  news_attrs_value_collect.fetch({ success : function(){  ready_stat.set('news_attrs_value_collect', true )  } })
-  rules.fetch({ success : function(){  ready_stat.set('rules', true )  } })
-
-  ready_stat.on('change' , function(){
-    if( this.is_ready() ){
-      new LIST_NEWS_VIEW( news_collect , news_attrs_collection ,news_attrs_value_collect , rules , sources_collect )
-      new LIST_RULES( sources_collect )
-    }
-  })
-
+  new NEWS_LIST( news_collection )
+  new RULES_LIST( rules )
 })

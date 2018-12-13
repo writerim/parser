@@ -3,31 +3,33 @@ package parser
 // Таблица новостей
 // Описание в отдульной таблице
 type News struct {
-  Id    int    `json:"id"`
-  Title string `json:"title"`
-  Img   string `json:"img"`
-  Href  string
+	Id    int    `json:"id"`
+	Title string `json:"title"` // Название новости
+	Img   string `json:"img"`   // Путь до картинки
+	Href  string
 }
 
+// Сдержания новостей
 type NewsDecription struct {
-  Id         int    `json:"id"`
-  NewsId     string `json:"news_id"`
-  Desciption string `json:"description"`
+	Id         int    `json:"id"`
+	NewsId     string `json:"news_id"`     // К какой новости
+	Desciption string `json:"description"` // Сожаржание
 }
 
-// Источники откуда будем брать
-type SourceList struct {
-  Id   int    `json:"id"`
-  Name string `json:"name"`
-  Href string `json:"href"`
-}
-
+// Правила разбора
 type Rules struct {
-  Id           int    `json:"id"`
-  NewsAttrs    string `json:"news_attr"`      // Для какого аттрибута правило
-  SourceListId int    `json:"source_list_id"` // Для какого урла будем разбирать
-  Rule         string `json:"rule"`           // Правило
-  GetAttr      string `json:"get_attr"`       // Собирать из тега или содержимого. Если тега то какого?
-  IsMain       bool   `json:"is_main"`        // Является ли блок главным в который надо входить?
-  IsUnique     bool   `json:"is_unique"`      // Является ли поле уникальным чтобы по нему отслеживать (Title)
+	Id        int    `json:"id"`
+	Name      string `json:"name"`       // Название правила
+	Link      string `json:"link"`       // Ссылка откуда брать информацию
+	MainPath  string `json:"main_path"`  // Путь до блока с новостью
+	ImgPath   string `json:"img_path"`   // Путь до картинки
+	ImgAttr   string `json:"img_attr"`   // Из какого атрибута брать картинку
+	TitlePath string `json:"title_path"` // Путь до названия новости
+	HrefPath  string `json:"href_path"`  // Путь до ссылки новости. Если пусто то на той же странице
+	DescPath  string `json:"desc_path"`  // Путь до содержиого новости
+}
+
+type BackboneRequest struct {
+	Model  string `json:"model"`
+	Method string `json:"_method"`
 }
