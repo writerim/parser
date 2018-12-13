@@ -5,7 +5,7 @@ var partition_size = 15
 //////////////////////
 
 
-
+// Этот вид отвечает за готовность всех моделей
 var READY_STAT = Backbone.Model.extend({
   defaults : {
     news_collect : false,

@@ -106,9 +106,6 @@ func (p *Parser) Parse() {
           if r.IsUnique {
             title = value
             sql_buff = append(sql_buff, fmt.Sprintf("INSERT INTO news (source_id,title) values(%d,'%s')", l.Id, title))
-          } else {
-            sql_add_attr := fmt.Sprintf("INSERT INTO news_attrs_value (news_id,news_attr_id , value) values( LAST_INSERT_ID() , %d , '%s')", r.NewsAttrsId, value)
-            sql_buff = append(sql_buff, sql_add_attr)
           }
 
           return
@@ -164,11 +161,11 @@ func (p *Parser) get_source_list() ([]SourceList, error) {
 /*
   Получение всех правил сборки
 */
-func (p *Parser) get_attrs_rule_list() ([]AttrsRulesList, error) {
+func (p *Parser) get_attrs_rule_list() ([]Rules, error) {
 
-  attrs_rule_list := []AttrsRulesList{}
+  attrs_rule_list := []Rules{}
 
-  results, err := p.query("SELECT id, news_attr_id, source_list_id, rule, get_attr , is_main , is_unique FROM attrs_rule_list")
+  results, err := p.query("SELECT id, news_attr, source_list_id, rule, get_attr , is_main , is_unique FROM attrs_rule_list")
   if err != nil {
     return attrs_rule_list, err
   }
@@ -176,8 +173,8 @@ func (p *Parser) get_attrs_rule_list() ([]AttrsRulesList, error) {
   defer results.Close()
 
   for results.Next() {
-    attrs := AttrsRulesList{}
-    err = results.Scan(&attrs.Id, &attrs.NewsAttrsId, &attrs.SourceListId, &attrs.Rule, &attrs.GetAttr, &attrs.IsMain, &attrs.IsUnique)
+    attrs := Rules{}
+    err = results.Scan(&attrs.Id, &attrs.NewsAttrs, &attrs.SourceListId, &attrs.Rule, &attrs.GetAttr, &attrs.IsMain, &attrs.IsUnique)
     if err != nil {
       return attrs_rule_list, err
     }
@@ -190,9 +187,9 @@ func (p *Parser) get_attrs_rule_list() ([]AttrsRulesList, error) {
 /*
   Поиск главного блока среди всех правил
 */
-func (p *Parser) find_main_rule_block(attrs_rule_list []AttrsRulesList, source_id int) (AttrsRulesList, []AttrsRulesList) {
-  nodes := []AttrsRulesList{}
-  main_block := AttrsRulesList{}
+func (p *Parser) find_main_rule_block(attrs_rule_list []Rules, source_id int) (Rules, []Rules) {
+  nodes := []Rules{}
+  main_block := Rules{}
 
   for j := 0; j < len(attrs_rule_list); j++ {
     if attrs_rule_list[j].SourceListId == source_id {

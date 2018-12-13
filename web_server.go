@@ -29,10 +29,7 @@ func (p *Parser) StartWebServer(port int) {
   e.GET("/api/news/:offset/:limit/", p.api_get_news_list)
 
   // Получение списка значений по свойствам
-  e.GET("/api/news_attrs_value/:offset/:limit/", p.api_get_news_attrs_value_list)
-
-  // Получение списка свойств
-  e.GET("/api/news_attrs/", p.api_get_news_attrs_list)
+  // e.GET("/api/news_attrs_value/:offset/:limit/", p.api_get_news_attrs_value_list)
 
   // Получение списка по заголовку
   e.GET("/api/news/find/:str_find/", p.api_get_finden_news)
@@ -53,80 +50,6 @@ func (p *Parser) get_index(c echo.Context) error {
 
 func (p *Parser) get_js(c echo.Context) error {
   return c.File(fmt.Sprintf("src/github.com/parser/public/js/%s", c.Param("file")))
-}
-
-func (p *Parser) api_get_news_attrs_value_list(c echo.Context) error {
-  offset, err := strconv.Atoi(c.Param("offset"))
-  if err != nil {
-    offset = 0
-  }
-  limit, err := strconv.Atoi(c.Param("limit"))
-  if err != nil {
-    limit = 15
-  }
-
-  res, err := p.query("drop table if exists news_by_lim")
-  if err != nil {
-    fmt.Println(err)
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
-  res.Close()
-
-  res, err = p.query(fmt.Sprintf("create temporary table `news_by_lim` select * from news order by id limit %d,%d", offset, limit))
-  if err != nil {
-    fmt.Println(err)
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
-  res.Close()
-
-  sql := `select
-  news_attrs_value.*
-  from news_attrs_value
-  left join news_by_lim
-  on news_by_lim.id = news_attrs_value.news_id
-  where news_by_lim.id is not null`
-
-  res, err = p.query(sql)
-  if err != nil {
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
-
-  news_attrs_value := []NewsAttrsValue{}
-
-  defer res.Close()
-
-  for res.Next() {
-    news_attr_item := NewsAttrsValue{}
-    err = res.Scan(&news_attr_item.Id, &news_attr_item.NewsId, &news_attr_item.AttrId, &news_attr_item.Value)
-    if err != nil {
-      return c.JSON(http.StatusOK, []NewsAttrsValue{})
-    }
-    news_attrs_value = append(news_attrs_value, news_attr_item)
-  }
-
-  return c.JSON(http.StatusOK, news_attrs_value)
-}
-
-func (p *Parser) api_get_news_attrs_list(c echo.Context) error {
-  res, err := p.query("select * from news_attrs")
-  if err != nil {
-    return echo.NewHTTPError(http.StatusNotFound, "[]")
-  }
-
-  news_attrs_value := []NewsAttrs{}
-
-  defer res.Close()
-
-  for res.Next() {
-    news_attr_item := NewsAttrs{}
-    err = res.Scan(&news_attr_item.Id, &news_attr_item.Name, &news_attr_item.Ident)
-    if err != nil {
-      return c.JSON(http.StatusOK, []NewsAttrs{})
-    }
-    news_attrs_value = append(news_attrs_value, news_attr_item)
-  }
-
-  return c.JSON(http.StatusOK, news_attrs_value)
 }
 
 func (p *Parser) api_get_news_list(c echo.Context) error {
@@ -153,7 +76,7 @@ func (p *Parser) api_get_news_list(c echo.Context) error {
 
   for res.Next() {
     news_item := News{}
-    err = res.Scan(&news_item.Id, &news_item.SourceId, &news_item.Title)
+    err = res.Scan(&news_item.Id, &news_item.Title, &news_item.Img)
     if err != nil {
       return c.JSON(http.StatusOK, []News{})
     }
@@ -178,7 +101,7 @@ func (p *Parser) api_get_finden_news(c echo.Context) error {
 
   for res.Next() {
     news_item := News{}
-    err = res.Scan(&news_item.Id, &news_item.SourceId, &news_item.Title)
+    err = res.Scan(&news_item.Id, &news_item.Title, &news_item.Img)
     if err != nil {
       return c.JSON(http.StatusOK, []News{})
     }
@@ -229,15 +152,15 @@ func (p *Parser) api_get_rules(c echo.Context) error {
     return echo.NewHTTPError(http.StatusNotFound, "[]")
   }
 
-  attrs := []AttrsRulesList{}
+  attrs := []Rules{}
 
   defer res.Close()
 
   for res.Next() {
-    attr := AttrsRulesList{}
-    err = res.Scan(&attr.Id, &attr.NewsAttrsId, &attr.SourceListId, &attr.Rule, &attr.GetAttr, &attr.IsMain, &attr.IsUnique)
+    attr := Rules{}
+    err = res.Scan(&attr.Id, &attr.NewsAttrs, &attr.SourceListId, &attr.Rule, &attr.GetAttr, &attr.IsMain, &attr.IsUnique)
     if err != nil {
-      return c.JSON(http.StatusOK, []AttrsRulesList{})
+      return c.JSON(http.StatusOK, []Rules{})
     }
     attrs = append(attrs, attr)
   }

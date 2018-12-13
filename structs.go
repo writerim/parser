@@ -1,28 +1,17 @@
 package parser
 
-// В таблице все новости
-// Новость не может быть без названия.
-// Остальные поля вынесем для масштабирования аттрибутов
+// Таблица новостей
+// Описание в отдульной таблице
 type News struct {
-  Id       int    `json:"id"`
-  SourceId int    `json:"source_id"`
-  Title    string `json:"title"`
-}
-
-// Дополнительные аттрибуты новостей
-// Ссылки, атвор, дата выпуска, канртинка  и прочее
-type NewsAttrsValue struct {
-  Id     int    `json:"id"`
-  NewsId int    `json:"news_id"`
-  AttrId int    `json:"news_attrs_id"`
-  Value  string `json:"value"`
-}
-
-// Описание всех дополнительных полей новости
-type NewsAttrs struct {
   Id    int    `json:"id"`
-  Name  string `json:"name"`
-  Ident string `json:"ident"`
+  Title string `json:"title"`
+  Img   string `json:"img"`
+}
+
+type NewsDecription struct {
+  Id         int    `json:"id"`
+  NewsId     string `json:"news_id"`
+  Desciption string `json:"description"`
 }
 
 // Источники откуда будем брать
@@ -32,9 +21,9 @@ type SourceList struct {
   Href string `json:"href"`
 }
 
-type AttrsRulesList struct {
+type Rules struct {
   Id           int    `json:"id"`
-  NewsAttrsId  int    `json:"news_attr_id"`   // Для какого аттрибута правило
+  NewsAttrs    string `json:"news_attr"`      // Для какого аттрибута правило
   SourceListId int    `json:"source_list_id"` // Для какого урла будем разбирать
   Rule         string `json:"rule"`           // Правило
   GetAttr      string `json:"get_attr"`       // Собирать из тега или содержимого. Если тега то какого?
