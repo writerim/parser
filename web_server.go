@@ -23,6 +23,7 @@ func (p *Parser) StartWebServer(port int) {
   e := echo.New()
 
   e.GET("/", p.get_index)
+  e.GET("/js/:file", p.get_js)
 
   // Получение списка новостей
   e.GET("/api/news/:offset/:limit/", p.api_get_news_list)
@@ -42,6 +43,9 @@ func (p *Parser) StartWebServer(port int) {
 
 func (p *Parser) get_index(c echo.Context) error {
   return c.File("src/github.com/parser/public/index.html")
+}
+func (p *Parser) get_js(c echo.Context) error {
+  return c.File(fmt.Sprintf("src/github.com/parser/public/js/%s", c.Param("file")))
 }
 
 func (p *Parser) api_get_news_list(c echo.Context) error {

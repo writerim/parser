@@ -32,7 +32,7 @@
 
         <br>
 
-        <ul class="list-group">
+        <ul class="list-group" id="list_news">
           <li class="list-group-item">Cras justo odio</li>
           <li class="list-group-item">Dapibus ac facilisis in</li>
           <li class="list-group-item">Morbi leo risus</li>
@@ -130,9 +130,70 @@
 
   </main>
 
+  <script type="text/template" id="list_news_tpl">
+    <% _.each( news.toArray() , function( news_item ){ %>
+      <li class="list-group-item"><%= news_item.get('title') %></li>
+    <% }) %>
+  </script>
 
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+
+  <script type="text/javascript" src="/js/jquery.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+  <script type="text/javascript" src="/js/underscore.js"></script>
+  <script type="text/javascript" src="/js/backbone.js"></script>
+  <script type="text/javascript">
+    
+
+    var NEWS = Backbone.Model.extend({
+      defaults : {
+        id : 0,
+        source_id : 0,
+        title : ""
+      }
+    })
+
+    var LIST_NEWS = Backbone.Collection.extend({ 
+      model : NEWS,
+      url : "/api/news/0/15/"
+    })
+
+    var LIST_NEWS_VIEW = Backbone.View.extend({
+      el : "#list_news",
+
+      template : "#list_news_tpl",
+
+      collection : new LIST_NEWS,
+
+      initialize : function( collection ){
+        this.collection = collection
+        this.listenTo( this.collection , "sync" , this.render )
+        this.render()
+      },
+
+      render : function(){
+        var tpl_c = _.template($(this.template).html())
+        $(this.$el).empty().append(tpl_c({
+          news : this.collection
+        }))
+      }
+    })
+
+    $(document).ready(function(){
+      var news_collect = new LIST_NEWS
+      news_collect.fetch({success : function(){}})
+      new LIST_NEWS_VIEW( news_collect )
+    })
+
+
+
+    var COURCE_MODEL = Backbone.Model.extend({
+      defaults : {
+        
+      }
+    })
+
+  </script>
 </body>
 </html>
