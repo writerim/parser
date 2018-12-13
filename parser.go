@@ -11,147 +11,47 @@ import (
   "time"
 )
 
-type ConfigDatabase struct {
-  Ip       string
-  Port     int
-  Login    string
-  Password string
-  Database string
+type Parser struct {
+  db_conn *sql.DB
 }
 
-var Conf = ConfigDatabase{}
-
-// В таблице все новости
-// Новость не может быть без названия.
-// Остальные поля вынесем для масштабирования аттрибутов
-type News struct {
-  Id       int `json:"id"`
-  SourceId int `json:"source_id"`
+func New() *Parser {
+  return &Parser{}
 }
 
-// Дополнительные аттрибуты новостей
-// Ссылки, атвор, дата выпуска, канртинка  и прочее
-type NewsAttrsValue struct {
-  Id     int    `json:"id"`
-  NewsId int    `json:"news_id"`
-  AttrId int    `json:"news_attrs_id"`
-  Value  string `json:"value"`
-}
-
-// Описание всех дополнительных полей новости
-type NewsAttrs struct {
-  Id   int    `json:"id"`
-  Name string `json:"name"`
-}
-
-// Источники откуда будем брать
-type SourceList struct {
-  Id   int    `json:"id"`
-  Name string `json:"name"`
-  Href string `json:"href"`
-}
-
-type AttrsRulesList struct {
-  Id           int    `json:"id"`
-  NewsAttrsId  int    `json:"news_attr_id"`   // Для какого аттрибута правило
-  SourceListId int    `json:"source_list_id"` // Для какого урла будем разбирать
-  Rule         string `json:"rule"`           // Правило
-  GetAttr      string `json:"get_attr"`       // Собирать из тега или содержимого. Если тега то какого?
-  IsMain       bool   `json:"is_main"`        // Является ли блок главным в который надо входить?
-  IsUnique     bool   `json:"is_unique"`      // Является ли поле уникальным чтобы по нему отслеживать (Title)
-}
-
-func Init() {
-
-  database_connect := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", Conf.Login, Conf.Password, Conf.Ip, Conf.Port, Conf.Database)
+func (p *Parser) ConnectDb(ip string, port int, login, password, database string) error {
+  database_connect := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+    login,
+    password,
+    ip,
+    port,
+    database)
 
   db, err := sql.Open("mysql", database_connect)
 
   if err != nil {
-    panic(err.Error())
+    return err
   }
+  p.db_conn = db
+  return nil
+}
+
+/*
+  "Демон" постоянно повторяющий парсер страниц
+*/
+func (p *Parser) StartDeamon() {
 
   c := make(chan os.Signal, 1)
   signal.Notify(c, os.Interrupt)
   go func() {
     <-c
     fmt.Println("[SIGINT force quit]")
-    db.Close()
+    p.db_conn.Close()
     os.Exit(0)
   }()
 
   for {
-
-    // Собираем правила сбора
-    source_list, err := get_source_list(db)
-    if err != nil {
-      break // По какой то причине отвалилось. Лучше все остановить
-    }
-    attrs_rule_list, err := get_attrs_rule_list(db)
-    if err != nil {
-      break // По какой то причине отвалилось. Лучше все остановить
-    }
-
-    for i := 0; i < len(source_list); i++ {
-      l := source_list[i]
-
-      doc, err := htmlquery.LoadURL(l.Href)
-      if err != nil {
-        continue
-      }
-
-      // Разбираем Отделаем главную ноду от сотальных
-      main_block, nodes := find_main_rule_block(attrs_rule_list, l.Id)
-
-      htmlquery.FindEach(doc, main_block.Rule, func(_ int, node *html.Node) {
-
-        title := ""
-        sql_buff := []string{}
-
-        for a := 0; a < len(nodes); a++ {
-          r := nodes[a]
-
-          htmlquery.FindEach(node, r.Rule, func(i int, node *html.Node) {
-
-            value := ""
-            if r.GetAttr != "" {
-              value = htmlquery.SelectAttr(node, r.GetAttr)
-            } else {
-              value = htmlquery.InnerText(node)
-            }
-
-            if r.IsUnique {
-              title = value
-              sql_buff = append(sql_buff, fmt.Sprintf("INSERT INTO news (source_id,title) values(%d,'%s')", l.Id, title))
-            } else {
-              sql_add_attr := fmt.Sprintf("INSERT INTO news_attrs_value (news_id,news_attr_id , value) values( LAST_INSERT_ID() , %d , '%s')", r.NewsAttrsId, value)
-              sql_buff = append(sql_buff, sql_add_attr)
-            }
-
-            return
-
-          })
-
-        }
-
-        // Нашли дубликат. Выходим и з парсинга сущности
-        if find_double_new(db, title) {
-          return
-        }
-
-        // Перебираем все запросы на добавление
-        for c := 0; c < len(sql_buff); c++ {
-          results, err := db.Query(sql_buff[c])
-          if err != nil {
-            return
-          }
-          defer results.Close()
-        }
-
-      })
-
-    }
-
+    p.Parse()
     fmt.Println("stop")
     time.Sleep(1 * time.Minute)
 
@@ -160,13 +60,90 @@ func Init() {
 }
 
 /*
+
+  Парсинг по данным пользователя
+
+*/
+func (p *Parser) Parse() {
+  // Собираем правила сбора
+  source_list, err := p.get_source_list()
+  if err != nil {
+    return // По какой то причине отвалилось. Лучше все остановить
+  }
+  attrs_rule_list, err := p.get_attrs_rule_list()
+  if err != nil {
+    return // По какой то причине отвалилось. Лучше все остановить
+  }
+
+  for i := 0; i < len(source_list); i++ {
+    l := source_list[i]
+
+    doc, err := htmlquery.LoadURL(l.Href)
+    if err != nil {
+      continue
+    }
+
+    // Разбираем Отделаем главную ноду от сотальных
+    main_block, nodes := p.find_main_rule_block(attrs_rule_list, l.Id)
+
+    htmlquery.FindEach(doc, main_block.Rule, func(_ int, node *html.Node) {
+
+      title := ""
+      sql_buff := []string{}
+
+      for a := 0; a < len(nodes); a++ {
+        r := nodes[a]
+
+        htmlquery.FindEach(node, r.Rule, func(i int, node *html.Node) {
+
+          value := ""
+          if r.GetAttr != "" {
+            value = htmlquery.SelectAttr(node, r.GetAttr)
+          } else {
+            value = htmlquery.InnerText(node)
+          }
+
+          if r.IsUnique {
+            title = value
+            sql_buff = append(sql_buff, fmt.Sprintf("INSERT INTO news (source_id,title) values(%d,'%s')", l.Id, title))
+          } else {
+            sql_add_attr := fmt.Sprintf("INSERT INTO news_attrs_value (news_id,news_attr_id , value) values( LAST_INSERT_ID() , %d , '%s')", r.NewsAttrsId, value)
+            sql_buff = append(sql_buff, sql_add_attr)
+          }
+
+          return
+
+        })
+
+      }
+
+      // Нашли дубликат. Выходим и з парсинга сущности
+      if p.find_double_new(title) {
+        return
+      }
+
+      // Перебираем все запросы на добавление
+      for c := 0; c < len(sql_buff); c++ {
+        results, err := p.db_conn.Query(sql_buff[c])
+        if err != nil {
+          return
+        }
+        defer results.Close()
+      }
+
+    })
+
+  }
+}
+
+/*
   Получение всех ресурсов для сборки
 */
-func get_source_list(db *sql.DB) ([]SourceList, error) {
+func (p *Parser) get_source_list() ([]SourceList, error) {
 
   source_list := []SourceList{}
 
-  results, err := db.Query("SELECT id, name , href FROM source_list")
+  results, err := p.query("SELECT id, name , href FROM source_list")
   if err != nil {
     return source_list, err
   }
@@ -187,11 +164,11 @@ func get_source_list(db *sql.DB) ([]SourceList, error) {
 /*
   Получение всех правил сборки
 */
-func get_attrs_rule_list(db *sql.DB) ([]AttrsRulesList, error) {
+func (p *Parser) get_attrs_rule_list() ([]AttrsRulesList, error) {
 
   attrs_rule_list := []AttrsRulesList{}
 
-  results, err := db.Query("SELECT id, news_attr_id, source_list_id, rule, get_attr , is_main , is_unique FROM attrs_rule_list")
+  results, err := p.query("SELECT id, news_attr_id, source_list_id, rule, get_attr , is_main , is_unique FROM attrs_rule_list")
   if err != nil {
     return attrs_rule_list, err
   }
@@ -213,7 +190,7 @@ func get_attrs_rule_list(db *sql.DB) ([]AttrsRulesList, error) {
 /*
   Поиск главного блока среди всех правил
 */
-func find_main_rule_block(attrs_rule_list []AttrsRulesList, source_id int) (AttrsRulesList, []AttrsRulesList) {
+func (p *Parser) find_main_rule_block(attrs_rule_list []AttrsRulesList, source_id int) (AttrsRulesList, []AttrsRulesList) {
   nodes := []AttrsRulesList{}
   main_block := AttrsRulesList{}
 
@@ -232,7 +209,7 @@ func find_main_rule_block(attrs_rule_list []AttrsRulesList, source_id int) (Attr
 /*
   Поиск дубликата в БД
 */
-func find_double_new(db *sql.DB, title string) bool {
+func (p *Parser) find_double_new(title string) bool {
 
   count := 0
 
@@ -241,7 +218,7 @@ func find_double_new(db *sql.DB, title string) bool {
   }
 
   sql_find_double := fmt.Sprintf("SELECT count(*) FROM news where title = '%s'", title)
-  results, err := db.Query(sql_find_double)
+  results, err := p.query(sql_find_double)
   if err != nil {
     return true
   }
@@ -256,4 +233,12 @@ func find_double_new(db *sql.DB, title string) bool {
   }
 
   return count > 0
+}
+
+func (p *Parser) query(sql string) (*sql.Rows, error) {
+  err := p.db_conn.Ping()
+  if err != nil {
+    return nil, err
+  }
+  return p.db_conn.Query(sql)
 }
