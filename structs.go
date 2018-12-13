@@ -6,6 +6,7 @@ type News struct {
   Id    int    `json:"id"`
   Title string `json:"title"`
   Img   string `json:"img"`
+  Href  string
 }
 
 type NewsDecription struct {

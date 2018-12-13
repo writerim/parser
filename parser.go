@@ -70,7 +70,7 @@ func (p *Parser) Parse() {
   if err != nil {
     return // По какой то причине отвалилось. Лучше все остановить
   }
-  attrs_rule_list, err := p.get_attrs_rule_list()
+  attrs_rule_list, err := p.get_rules()
   if err != nil {
     return // По какой то причине отвалилось. Лучше все остановить
   }
@@ -88,8 +88,7 @@ func (p *Parser) Parse() {
 
     htmlquery.FindEach(doc, main_block.Rule, func(_ int, node *html.Node) {
 
-      title := ""
-      sql_buff := []string{}
+      news_item := News{}
 
       for a := 0; a < len(nodes); a++ {
         r := nodes[a]
@@ -103,9 +102,13 @@ func (p *Parser) Parse() {
             value = htmlquery.InnerText(node)
           }
 
-          if r.IsUnique {
-            title = value
-            sql_buff = append(sql_buff, fmt.Sprintf("INSERT INTO news (source_id,title) values(%d,'%s')", l.Id, title))
+          switch r.NewsAttrs {
+          case "img":
+            news.Img = value
+          case "title":
+            news.Title = value
+          case "href":
+            news.Href = value
           }
 
           return
@@ -114,18 +117,8 @@ func (p *Parser) Parse() {
 
       }
 
-      // Нашли дубликат. Выходим и з парсинга сущности
-      if p.find_double_new(title) {
-        return
-      }
-
-      // Перебираем все запросы на добавление
-      for c := 0; c < len(sql_buff); c++ {
-        results, err := p.db_conn.Query(sql_buff[c])
-        if err != nil {
-          return
-        }
-        defer results.Close()
+      if !p.find_double_new(news_item.Title) {
+        sql_append := fmt.Sprintf("insert into (title , img) values('%s','%s')", news_item.Title, news_item.Img)
       }
 
     })
@@ -161,11 +154,11 @@ func (p *Parser) get_source_list() ([]SourceList, error) {
 /*
   Получение всех правил сборки
 */
-func (p *Parser) get_attrs_rule_list() ([]Rules, error) {
+func (p *Parser) get_rules() ([]Rules, error) {
 
   attrs_rule_list := []Rules{}
 
-  results, err := p.query("SELECT id, news_attr, source_list_id, rule, get_attr , is_main , is_unique FROM attrs_rule_list")
+  results, err := p.query("SELECT id, news_attr, source_list_id, rule, get_attr , is_main , is_unique FROM rules")
   if err != nil {
     return attrs_rule_list, err
   }
