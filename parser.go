@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
   "database/sql"
@@ -10,6 +10,16 @@ import (
   "os/signal"
   "time"
 )
+
+type ConfigDatabase struct {
+  Ip       string
+  Port     int
+  Login    string
+  Password string
+  Database string
+}
+
+var Conf = ConfigDatabase{}
 
 // В таблице все новости
 // Новость не может быть без названия.
@@ -51,9 +61,11 @@ type AttrsRulesList struct {
   IsUnique     bool   `json:"is_unique"`      // Является ли поле уникальным чтобы по нему отслеживать (Title)
 }
 
-func main() {
+func Init() {
 
-  db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/parser")
+  database_connect := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", Conf.Login, Conf.Password, Conf.Ip, Conf.Port, Conf.Database)
+
+  db, err := sql.Open("mysql", database_connect)
 
   if err != nil {
     panic(err.Error())
