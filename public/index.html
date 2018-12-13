@@ -32,87 +32,14 @@
 
         <br>
 
-        <ul class="list-group" id="list_news">
-          <li class="list-group-item">Cras justo odio</li>
-          <li class="list-group-item">Dapibus ac facilisis in</li>
-          <li class="list-group-item">Morbi leo risus</li>
-          <li class="list-group-item">Porta ac consectetur ac</li>
-          <li class="list-group-item">Vestibulum at eros</li>
-        </ul>
+        <ul class="list-group" id="list_news"></ul>
 
       </div>
       <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
 
         <br>
 
-        <div class="row">
-
-          <div class="col-lg-3">
-            <button class="btn btn-danger fa fa-times"></button>
-          Yandex</div>
-          <div class="col-lg-9">
-            <table class="table">
-              <thead>
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <th>Объект</th>
-                  <th>Правило</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><i class="fa fa-pencil"></i></td>
-                  <td><i class="fa fa-times"></i></td>
-                  <td>Картинка</td>
-                  <td>//asasa</td>
-                </tr>
-                <tr>
-                  <td><i class="fa fa-pencil"></i></td>
-                  <td><i class="fa fa-times"></i></td>
-                  <td>Картинка</td>
-                  <td>//asasa</td>
-                </tr>
-                <tr>
-                  <td><i class="fa fa-pencil"></i></td>
-                  <td><i class="fa fa-times"></i></td>
-                  <td>Картинка</td>
-                  <td>//asasa</td>
-                </tr>
-                <tr>
-                  <td><i class="fa fa-pencil"></i></td>
-                  <td><i class="fa fa-times"></i></td>
-                  <td>Картинка</td>
-                  <td>//asasa</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <hr>
-
-        <div class="row">
-
-          <div class="col-lg-3">Yandex</div>
-          <div class="col-lg-9">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Объект</th>
-                  <th>Правило</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Картинка</td>
-                  <td>//asasa</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
+        <div id="rules"></div>
 
         <div class="row">
 
@@ -132,8 +59,89 @@
 
   <script type="text/template" id="list_news_tpl">
     <% _.each( news.toArray() , function( news_item ){ %>
-      <li class="list-group-item"><%= news_item.get('title') %></li>
+      <li class="list-group-item">
+        <%
+
+          /* Поиск сущностей для отрисовки */
+
+          var link_value = new NEWS_ATTRS_VALUE
+
+          var link = attrs.findWhere({ ident : 'link' })
+          if( typeof link != "undefined" ){
+            link_value = attrs_value.findWhere({ news_attrs_id : link.get('id') , news_id : news_item.get('id') })
+            if( typeof link_value == "undefined" ){
+              link_value = new NEWS_ATTRS_VALUE
+            }
+          }
+
+        %>
+
+
+
+        <% if(link_value.get('id')){ %>
+          <a href="<%= link_value.get('value') %>">
+        <% } %>
+          <%= news_item.get('title') %></li>
+        <% if(link_value.get('id')){ %>
+          </a>
+        <% } %>
     <% }) %>
+    <button class="btn btn-info" id="more_news">Еще</button>
+  </script>
+
+  <script type="text/template" id="rules_tpl">
+    
+    <% _.each( sources.toArray() , function( source ){ %>
+
+    <div class="row">
+
+          <div class="col-lg-3">
+            <button class="btn btn-danger fa fa-times"></button> <%= source.get('name') %></div>
+          <div class="col-lg-9">
+            <!-- <table class="table">
+              <thead>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <th>Объект</th>
+                  <th>Правило</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><i class="fa fa-pencil"></i></td>
+                  <td><i class="fa fa-times"></i></td>
+                  <td>Картинка</td>
+                  <td>//asasa</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-pencil"></i></td>
+                  <td><i class="fa fa-times"></i></td>
+                  <td>Картинка</td>
+                  <td>//asasa</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-pencil"></i></td>
+                  <td><i class="fa fa-times"></i></td>
+                  <td>Картинка</td>
+                  <td>//asasa</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-pencil"></i></td>
+                  <td><i class="fa fa-times"></i></td>
+                  <td>Картинка</td>
+                  <td>//asasa</td>
+                </tr>
+              </tbody>
+            </table> -->
+          </div>
+        </div>
+
+        <hr>
+
+    <% }) %>
+
+
   </script>
 
 
@@ -143,57 +151,6 @@
 
   <script type="text/javascript" src="/js/underscore.js"></script>
   <script type="text/javascript" src="/js/backbone.js"></script>
-  <script type="text/javascript">
-    
-
-    var NEWS = Backbone.Model.extend({
-      defaults : {
-        id : 0,
-        source_id : 0,
-        title : ""
-      }
-    })
-
-    var LIST_NEWS = Backbone.Collection.extend({ 
-      model : NEWS,
-      url : "/api/news/0/15/"
-    })
-
-    var LIST_NEWS_VIEW = Backbone.View.extend({
-      el : "#list_news",
-
-      template : "#list_news_tpl",
-
-      collection : new LIST_NEWS,
-
-      initialize : function( collection ){
-        this.collection = collection
-        this.listenTo( this.collection , "sync" , this.render )
-        this.render()
-      },
-
-      render : function(){
-        var tpl_c = _.template($(this.template).html())
-        $(this.$el).empty().append(tpl_c({
-          news : this.collection
-        }))
-      }
-    })
-
-    $(document).ready(function(){
-      var news_collect = new LIST_NEWS
-      news_collect.fetch({success : function(){}})
-      new LIST_NEWS_VIEW( news_collect )
-    })
-
-
-
-    var COURCE_MODEL = Backbone.Model.extend({
-      defaults : {
-        
-      }
-    })
-
-  </script>
+  <script type="text/javascript" src="/js/main.js"></script>
 </body>
 </html>

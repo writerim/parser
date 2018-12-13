@@ -20,8 +20,9 @@ type NewsAttrsValue struct {
 
 // Описание всех дополнительных полей новости
 type NewsAttrs struct {
-  Id   int    `json:"id"`
-  Name string `json:"name"`
+  Id    int    `json:"id"`
+  Name  string `json:"name"`
+  Ident string `json:"ident"`
 }
 
 // Источники откуда будем брать
