@@ -28,6 +28,17 @@ var NEWS = Backbone.Collection.extend({
   url : "/api/news/"
 })
 
+var NEWS_DESCRIPTION = Backbone.Model.extend({
+  defaults : {
+    id : 0,
+    news_id : 0,
+    desription : ""
+  },
+  url : function(){
+    return "/api/news_description/" + this.get('news_id')
+  }
+})
+
 
 var RULE = Backbone.Model.extend({
   defaults : {
@@ -80,14 +91,17 @@ var MODAL_MORE_NEWS = Backbone.View.extend({
 
   initialize : function( news ){
     this.model = news
-    this.render()
+    this.description = new NEWS_DESCRIPTION({ news_id : news.get('id')})
+    this.description.fetch()
+    this.listenTo( this.description , "sync" , this.render )
   },
 
   render : function(){
     var tpl_c = _.template( $(this.template).html() )
     this.$el = $(
       tpl_c({
-        news : this.model
+        news : this.model,
+        description : this.description
       })
     ).modal('show')
   }

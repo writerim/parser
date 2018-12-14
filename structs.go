@@ -3,10 +3,11 @@ package parser
 // Таблица новостей
 // Описание в отдульной таблице
 type News struct {
-	Id    int    `json:"id"`
-	Title string `json:"title"` // Название новости
-	Img   string `json:"img"`   // Путь до картинки
-	Href  string
+	Id          int    `json:"id"`
+	Title       string `json:"title"` // Название новости
+	Img         string `json:"img"`   // Путь до картинки
+	Href        string
+	Description string
 }
 
 // Сдержания новостей

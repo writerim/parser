@@ -255,11 +255,11 @@
 
                 <h4><%= news.escape('title') %></h4>
                 <%= news.get_img() %>
+                <%= description.get('description') %>
 
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-                  <button type="button" class="btn btn-danger" id="delete">Удалить</button>
               </div>
           </div>
       </div>
@@ -344,7 +344,9 @@
                           <div style="clear:both;"></div>
 
 
-                          <div class="form-group pull-right" style="width:90%; display:none;" >
+                          <div class="form-group pull-right" style="width:90%; 
+                          <% if( rule.get('img_attr') == "" ){ %>display:none<% } %> "
+                          >
                             <label>Название аттрибута</label>
                             <input type="text" 
                             value="<%= rule.get('img_attr') %>"
@@ -372,7 +374,8 @@
                         </div>
                         <div style="clear:both;"></div>
 
-                          <div class="form-group pull-right" style="width:90%;display:none;" >
+                          <div class="form-group pull-right" style="width:90%;
+                          <% if( rule.get('href_path') == "" ){ %>display:none;<% } %>" >
                             <label>Путь до ссылки на новость</label>
                             <input type="text" 
                             value="<%= rule.get('href_path') %>"

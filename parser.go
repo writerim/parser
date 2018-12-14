@@ -50,7 +50,7 @@ func (p *Parser) StartDeamon() {
 	for {
 		p.Parse()
 		fmt.Println("stop")
-		time.Sleep(1 * time.Minute)
+		time.Sleep(10 * time.Minute)
 
 	}
 
@@ -103,11 +103,10 @@ func (p *Parser) Parse() {
 							news_item.Href = htmlquery.SelectAttr(node_href, "href")
 						})
 
-						doc_desc, err := htmlquery.LoadURL(rule.Link + rule.HrefPath)
+						doc_desc, err := htmlquery.LoadURL(rule.Link + news_item.Href)
 						if err == nil {
 							htmlquery.FindEach(doc_desc, rule.DescPath, func(i int, node_desc *html.Node) {
-								value := htmlquery.InnerText(node_desc)
-								fmt.Println(value)
+								news_item.Description = htmlquery.InnerText(node_desc)
 							})
 						}
 					}
@@ -125,8 +124,6 @@ func (p *Parser) Parse() {
 	for i := 0; i < len(news); i++ {
 		p.add_news(news[i])
 	}
-
-	fmt.Println(news)
 
 }
 

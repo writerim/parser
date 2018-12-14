@@ -27,6 +27,7 @@ func (p *Parser) StartWebServer(port int) {
 	e.GET("/", p.get_index)
 	e.GET("/js/:file", p.get_js)
 	e.GET("/api/news/", p.api_get_news)
+	e.GET("/api/news_description/:id", p.api_get_news_description)
 	e.GET("/api/rule/", p.api_get_rule)
 	e.POST("/api/rule/:id", p.api_set_rule)
 
@@ -198,10 +199,19 @@ func (p *Parser) add_news(news News) News {
 	if err != nil {
 		return News{}
 	}
-	defer res.Close()
 	res.Next()
 	id_add := 0
 	res.Scan(&id_add)
+	res.Close()
+
+	description := strings.Replace(news.Description, "'", "\\'", -1)
+	sql := fmt.Sprintf("insert into news_description(news_id,description) values(%d,'%s')", id_add, description)
+
+	res, err = p.query(sql)
+	if err != nil {
+		return News{}
+	}
+	defer res.Close()
 
 	return p.news_by_id(id_add)
 }
@@ -242,5 +252,23 @@ func (p *Parser) get_rule_by_id(id int, c echo.Context) error {
 		&rule.DescPath)
 
 	return c.JSON(http.StatusCreated, rule)
+
+}
+
+func (p *Parser) api_get_news_description(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	sql := fmt.Sprintf("select * from news_description where news_id = %d", id)
+	res, err := p.query(sql)
+	if err != nil {
+		return nil
+	}
+	defer res.Close()
+
+	desc := NewsDecription{}
+	res.Next()
+	res.Scan(&desc.Id, &desc.NewsId,
+		&desc.Desciption)
+
+	return c.JSON(http.StatusCreated, desc)
 
 }

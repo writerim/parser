@@ -34,3 +34,10 @@ func main() {
 
 
 ```
+
+
+Писать правила надо по стандарту xPath  
+Пример : 
+//*[@class='class_name']  
+//*[contains(@class,'Link-root')]@href  
+//*[contains(@class,'Link-root')]  
