@@ -13,139 +13,139 @@
 
   <style>
 
-  .wizard-steps-panel {
-    position: relative;
-    height: 4em;
-  }
+    .wizard-steps-panel {
+      position: relative;
+      height: 4em;
+    }
 
-  .wizard-steps-panel .step-number{
-    display: inline-block;
-    text-align: center;
-    font-size: 26px;
-    position: relative;
-  }
+    .wizard-steps-panel .step-number{
+      display: inline-block;
+      text-align: center;
+      font-size: 26px;
+      position: relative;
+    }
 
-  .wizard-steps-panel .step-number .number{
-    width: 1.7em;
-    height: 1.7em;
-    background-color: #dedede;
-    color: #5a5a5a;
-    margin-left: calc(50% - 1.7em / 2 );
-    border: 4px solid #dedede;
-    border-radius: 1.7em;
-  }
+    .wizard-steps-panel .step-number .number{
+      width: 1.7em;
+      height: 1.7em;
+      background-color: #dedede;
+      color: #5a5a5a;
+      margin-left: calc(50% - 1.7em / 2 );
+      border: 4px solid #dedede;
+      border-radius: 1.7em;
+    }
 
-  .wizard-steps-panel .step-number.doing .number,
-  .wizard-steps-panel .step-number.doing .number:after,
-  .wizard-steps-panel .step-number.doing .number:before {
-    background-color: #FF5454;
-    border: 4px solid #FF5454;
-    color: white;
-  }
+    .wizard-steps-panel .step-number.doing .number,
+    .wizard-steps-panel .step-number.doing .number:after,
+    .wizard-steps-panel .step-number.doing .number:before {
+      background-color: #FF5454;
+      border: 4px solid #FF5454;
+      color: white;
+    }
 
-  .wizard-steps-panel .step-number.done .number,
-  .wizard-steps-panel .step-number.done .number:after,
-  .wizard-steps-panel .step-number.done .number:before {
-    background-color: #79C447;
-    border: 4px solid #79C447;
-    color: white;
-  }
+    .wizard-steps-panel .step-number.done .number,
+    .wizard-steps-panel .step-number.done .number:after,
+    .wizard-steps-panel .step-number.done .number:before {
+      background-color: #79C447;
+      border: 4px solid #79C447;
+      color: white;
+    }
 
-  .wizard-steps-panel .step-number .number:before {
-    content: ' ';
-    position: absolute;
-    border: 4px solid #dedede;
-    border-radius: 4px;
-    left: -4px;
-    right: calc( 50% + 1.4em/2 );
-    top: calc( 1.4em / 2 );
-  }
+    .wizard-steps-panel .step-number .number:before {
+      content: ' ';
+      position: absolute;
+      border: 4px solid #dedede;
+      border-radius: 4px;
+      left: -4px;
+      right: calc( 50% + 1.4em/2 );
+      top: calc( 1.4em / 2 );
+    }
 
-  .wizard-steps-panel .step-number .number:after  {
-    content: ' ';
-    position: absolute;
-    border: 4px solid #dedede;
-    border-radius: 4px;
-    left: calc( 50% + 1.4em/2 );
-    right: -4px;
-    top: calc( 1.4em / 2 );
-  }
+    .wizard-steps-panel .step-number .number:after  {
+      content: ' ';
+      position: absolute;
+      border: 4px solid #dedede;
+      border-radius: 4px;
+      left: calc( 50% + 1.4em/2 );
+      right: -4px;
+      top: calc( 1.4em / 2 );
+    }
 
-  .wizard-steps-panel.steps-quantity-1 .step-number {
-    width: 99%;
-  }
+    .wizard-steps-panel.steps-quantity-1 .step-number {
+      width: 99%;
+    }
 
-  .wizard-steps-panel.steps-quantity-2 .step-number {
-    width: 49%;
-  }
+    .wizard-steps-panel.steps-quantity-2 .step-number {
+      width: 49%;
+    }
 
-  .wizard-steps-panel.steps-quantity-3 .step-number {
-    width: 32%;
-  }
+    .wizard-steps-panel.steps-quantity-3 .step-number {
+      width: 32%;
+    }
 
-  .wizard-steps-panel.steps-quantity-4 .step-number {
-    width: 24%;
-  }
+    .wizard-steps-panel.steps-quantity-4 .step-number {
+      width: 24%;
+    }
 
-  .wizard-steps-panel.steps-quantity-5 .step-number {
-    width: 19%;
-  }
+    .wizard-steps-panel.steps-quantity-5 .step-number {
+      width: 19%;
+    }
 
-  .wizard-steps-panel.steps-quantity-6 .step-number {
-    width: 15%;
-  }
+    .wizard-steps-panel.steps-quantity-6 .step-number {
+      width: 15%;
+    }
 
-  .material-switch > input[type="checkbox"] {
-    display: none;   
-}
+    .material-switch > input[type="checkbox"] {
+      display: none;   
+    }
 
-.material-switch > label {
-    cursor: pointer;
-    height: 0px;
-    position: relative; 
-    width: 40px;  
-}
+    .material-switch > label {
+      cursor: pointer;
+      height: 0px;
+      position: relative; 
+      width: 40px;  
+    }
 
-.material-switch > label::before {
-    background: rgb(0, 0, 0);
-    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    content: '';
-    height: 16px;
-    margin-top: -8px;
-    position:absolute;
-    opacity: 0.3;
-    transition: all 0.4s ease-in-out;
-    width: 40px;
-}
-.material-switch > label::after {
-    background: rgb(255, 255, 255);
-    border-radius: 16px;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-    content: '';
-    height: 24px;
-    left: -4px;
-    margin-top: -8px;
-    position: absolute;
-    top: -4px;
-    transition: all 0.3s ease-in-out;
-    width: 24px;
+    .material-switch > label::before {
+      background: rgb(0, 0, 0);
+      box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      content: '';
+      height: 16px;
+      margin-top: -8px;
+      position:absolute;
+      opacity: 0.3;
+      transition: all 0.4s ease-in-out;
+      width: 40px;
+    }
+    .material-switch > label::after {
+      background: rgb(255, 255, 255);
+      border-radius: 16px;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+      content: '';
+      height: 24px;
+      left: -4px;
+      margin-top: -8px;
+      position: absolute;
+      top: -4px;
+      transition: all 0.3s ease-in-out;
+      width: 24px;
 
-}
-.label-success {
+    }
+    .label-success {
 
-    background-color: #5cb85c;
+      background-color: #5cb85c;
 
-}
-.material-switch > input[type="checkbox"]:checked + label::before {
-    background: inherit;
-    opacity: 0.5;
-}
-.material-switch > input[type="checkbox"]:checked + label::after {
-    background: inherit;
-    left: 20px;
-}
-</style>
+    }
+    .material-switch > input[type="checkbox"]:checked + label::before {
+      background: inherit;
+      opacity: 0.5;
+    }
+    .material-switch > input[type="checkbox"]:checked + label::after {
+      background: inherit;
+      left: 20px;
+    }
+  </style>
 
 </head>
 
@@ -154,6 +154,14 @@
 
   <br>
   <main role="main" class="container">
+
+    <form class="form-inline active-pink-4">
+      <input class="form-control form-control-sm mr-3 w-75" type="text" placeholder="Search" aria-label="Search" id="search">
+      <i class="fa fa-search" aria-hidden="true"></i>
+    </form>
+
+    <br><br>
+
     <ul class="nav nav-tabs" id="myTab" role="tablist">
       <li class="nav-item">
         <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Новости</a>
@@ -194,234 +202,234 @@
 
   <script type="text/template" id="news_list_tpl">
     <% _.each( news.toArray() , function( news_item ){ %>
-      <li class="list-group-item more_view_news" id="<%= news_item.cid %>">
-        <%= news_item.get('title') %>
-      </li>
+    <li class="list-group-item more_view_news" id="<%= news_item.cid %>">
+      <%= news_item.get('title') %>
+    </li>
     <% }) %>
     <button class="btn btn-info" id="more_news">Еще</button>
   </script>
 
   <script type="text/template" id="list_rules_tpl">
     <ul class="list-group">
-    <% _.each( rules.toArray() , function( rule_item ){ %>
+      <% _.each( rules.toArray() , function( rule_item ){ %>
       <li class="list-group-item" id="<%= rule_item.cid %>">
         <button class="btn btn-danger fa fa-times delete_rule"></button>
         <button class="btn btn-info fa fa-pencil edit_rule"></button>
         <%= rule_item.get('name') %>
       </li>
-    <% }) %>
+      <% }) %>
     </ul>
     <button class="btn btn-info" id="add_rule">Добавить</button>
   </script>
 
 
   <script type="text/template" id="rules_delete_modal">
-    
+
     <div class="modal fade" 
-        id="modal_children" 
-        tabindex="-1" 
-        role="dialog" 
-        aria-labelledby="myModalLabel" 
-        aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-body wizard-content">
+    id="modal_children" 
+    tabindex="-1" 
+    role="dialog" 
+    aria-labelledby="myModalLabel" 
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body wizard-content">
 
-                Удалить?
+          Удалить?
 
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-                  <button type="button" class="btn btn-danger" id="delete">Удалить</button>
-              </div>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+          <button type="button" class="btn btn-danger" id="delete">Удалить</button>
+        </div>
       </div>
+    </div>
   </div>
 
-  </script>
+</script>
 
 
-  <script type="text/template" id="more_view_news">
-    
-    <div class="modal fade" 
-        id="modal_children" 
-        tabindex="-1" 
-        role="dialog" 
-        aria-labelledby="myModalLabel" 
-        aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-body wizard-content">
+<script type="text/template" id="more_view_news">
 
-                <h4><%= news.escape('title') %></h4>
-                <%= news.get_img() %>
-                <%= description.get('description') %>
+  <div class="modal fade" 
+  id="modal_children" 
+  tabindex="-1" 
+  role="dialog" 
+  aria-labelledby="myModalLabel" 
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body wizard-content">
 
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-              </div>
-          </div>
+        <h4><%= news.escape('title') %></h4>
+        <%= news.get_img() %>
+        <%= description.get('description') %>
+
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
   </div>
+</div>
 
-  </script>
+</script>
 
 <script type="text/template" id="rule_modal_tpl">
 
   <div class="modal fade" 
-        id="modal_children" 
-        tabindex="-1" 
-        role="dialog" 
-        aria-labelledby="myModalLabel" 
-        aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <button 
-                    type="button" 
-                    class="close" 
-                    data-dismiss="modal" 
-                    aria-hidden="true">×</button>
-              </div>
-              <div class="modal-body wizard-content">
-
-
-                    <h4 class="text-info">Настройка источника</h4>
-
-                    <div class="wizard-step" >
-
-                          <div class="form-group">
-                            <label>Название</label>
-                            <input type="text" class="form-control" id="name" placeholder="Yandex news"
-                            value="<%= rule.get('name') %>"
-                            >
-                          </div>
-
-                          <div class="form-group">
-                            <label>Ссылка</label>
-                            <input type="text" class="form-control" id="link" placeholder="http://..."
-                            value="<%= rule.get('link') %>"
-                            >
-                          </div>
-
-                    </div>
-
-                    <hr>
-
-                    <h4 class="text-info">Настройка списка новостей</h4>
-
-                      <div class="wizard-step">
-                          <div class="form-group">
-                            <label>Путь до блока одной новости</label>
-                            <input type="text" class="form-control" id="main_path" placeholder="//*[contains(@class,'news')]"
-                            value="<%= rule.get('main_path') %>"
-                            >
-                          </div>
-
-                          <div class="form-group pull-right"
-                          style="width:90%;"
-                          >
-                            <label>Путь до изображения</label>
-                            <input type="text" 
-                            value="<%= rule.get('img_path') %>"
-                            class="form-control" id="img_path" placeholder="//*[contains(@class,'img')]">
-                            <small class="text-muted">*Путь относительно от блока новости</small>
-                          </div>
-                          <div style="clear:both;"></div>
-
-                          <div class="form-group pull-right"
-                          style="width:90%;"
-                          >
-                            <label>Путь до в style?</label><br>
-                            <div class="material-switch pull-left">
-                                <input id="is_img_attr" type="checkbox"
-                                <% if( rule.get('img_attr') != "" ){ %>checked<% } %>
-                                />
-                                <label for="is_img_attr" class="label-success"></label>
-                            </div>
-                          </div>
-                          <div style="clear:both;"></div>
-
-
-                          <div class="form-group pull-right" style="width:90%; 
-                          <% if( rule.get('img_attr') == "" ){ %>display:none<% } %> "
-                          >
-                            <label>Название аттрибута</label>
-                            <input type="text" 
-                            value="<%= rule.get('img_attr') %>"
-                            class="form-control" id="img_attr" placeholder="style">
-                          </div>
-                          <div style="clear:both;"></div>
-
-
-                          <div class="form-group pull-right" style="width:90%;" >
-                            <label>Путь до названия новости</label>
-                            <input type="text" 
-                            value="<%= rule.get('title_path') %>"
-                            class="form-control" id="title_path" placeholder="//*[contains(@class,'title')]">
-                          </div>
-                          <div style="clear:both;"></div>
-
-                        <div class="form-group pull-right" style="width:90%;">
-                          <label>Содержимое на новой странице?</label><br>
-                          <div class="material-switch pull-left">
-                              <input id="is_blank" type="checkbox"
-                              <% if( rule.get('href_path') != "" ){ %>checked<% } %>
-                              />
-                              <label for="is_blank" class="label-success"></label>
-                          </div>
-                        </div>
-                        <div style="clear:both;"></div>
-
-                          <div class="form-group pull-right" style="width:90%;
-                          <% if( rule.get('href_path') == "" ){ %>display:none;<% } %>" >
-                            <label>Путь до ссылки на новость</label>
-                            <input type="text" 
-                            value="<%= rule.get('href_path') %>"
-                            class="form-control" id="href_path" placeholder="//*[contains(@class,'news')]/@href">
-                          </div>
-                          <div style="clear:both;"></div>
-
-
-                    </div>
-
-                    <hr>
-
-                    <h4 class="text-info">Настройка одной новости</h4>
-
-                      <div class="wizard-step">
-                        
-
-
-                        <div class="form-group">
-                          <label>Путь до cодержания новости</label>
-                          <input type="text" 
-                          value="<%= rule.get('desc_path') %>"
-                          class="form-control" id="desc_path" placeholder="//*[contains(@class,'news')]">
-                        </div>
-                        <div style="clear:both;"></div>
-
-
-
-                      </div>
-                            </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
-                  <button type="button" class="btn btn-disabled" id="save">Save changes</button>
-              </div>
-          </div>
+  id="modal_children" 
+  tabindex="-1" 
+  role="dialog" 
+  aria-labelledby="myModalLabel" 
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button 
+        type="button" 
+        class="close" 
+        data-dismiss="modal" 
+        aria-hidden="true">×</button>
       </div>
+      <div class="modal-body wizard-content">
+
+
+        <h4 class="text-info">Настройка источника</h4>
+
+        <div class="wizard-step" >
+
+          <div class="form-group">
+            <label>Название</label>
+            <input type="text" class="form-control" id="name" placeholder="Yandex news"
+            value="<%= rule.get('name') %>"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Ссылка</label>
+            <input type="text" class="form-control" id="link" placeholder="http://..."
+            value="<%= rule.get('link') %>"
+            >
+          </div>
+
+        </div>
+
+        <hr>
+
+        <h4 class="text-info">Настройка списка новостей</h4>
+
+        <div class="wizard-step">
+          <div class="form-group">
+            <label>Путь до блока одной новости</label>
+            <input type="text" class="form-control" id="main_path" placeholder="//*[contains(@class,'news')]"
+            value="<%= rule.get('main_path') %>"
+            >
+          </div>
+
+          <div class="form-group pull-right"
+          style="width:90%;"
+          >
+          <label>Путь до изображения</label>
+          <input type="text" 
+          value="<%= rule.get('img_path') %>"
+          class="form-control" id="img_path" placeholder="//*[contains(@class,'img')]">
+          <small class="text-muted">*Путь относительно от блока новости</small>
+        </div>
+        <div style="clear:both;"></div>
+
+        <div class="form-group pull-right"
+        style="width:90%;"
+        >
+        <label>Путь до в style?</label><br>
+        <div class="material-switch pull-left">
+          <input id="is_img_attr" type="checkbox"
+          <% if( rule.get('img_attr') != "" ){ %>checked<% } %>
+          />
+          <label for="is_img_attr" class="label-success"></label>
+        </div>
+      </div>
+      <div style="clear:both;"></div>
+
+
+      <div class="form-group pull-right" style="width:90%; 
+      <% if( rule.get('img_attr') == "" ){ %>display:none<% } %> "
+      >
+      <label>Название аттрибута</label>
+      <input type="text" 
+      value="<%= rule.get('img_attr') %>"
+      class="form-control" id="img_attr" placeholder="style">
+    </div>
+    <div style="clear:both;"></div>
+
+
+    <div class="form-group pull-right" style="width:90%;" >
+      <label>Путь до названия новости</label>
+      <input type="text" 
+      value="<%= rule.get('title_path') %>"
+      class="form-control" id="title_path" placeholder="//*[contains(@class,'title')]">
+    </div>
+    <div style="clear:both;"></div>
+
+    <div class="form-group pull-right" style="width:90%;">
+      <label>Содержимое на новой странице?</label><br>
+      <div class="material-switch pull-left">
+        <input id="is_blank" type="checkbox"
+        <% if( rule.get('href_path') != "" ){ %>checked<% } %>
+        />
+        <label for="is_blank" class="label-success"></label>
+      </div>
+    </div>
+    <div style="clear:both;"></div>
+
+    <div class="form-group pull-right" style="width:90%;
+    <% if( rule.get('href_path') == "" ){ %>display:none;<% } %>" >
+    <label>Путь до ссылки на новость</label>
+    <input type="text" 
+    value="<%= rule.get('href_path') %>"
+    class="form-control" id="href_path" placeholder="//*[contains(@class,'news')]/@href">
   </div>
+  <div style="clear:both;"></div>
+
+
+</div>
+
+<hr>
+
+<h4 class="text-info">Настройка одной новости</h4>
+
+<div class="wizard-step">
+
+
+
+  <div class="form-group">
+    <label>Путь до cодержания новости</label>
+    <input type="text" 
+    value="<%= rule.get('desc_path') %>"
+    class="form-control" id="desc_path" placeholder="//*[contains(@class,'news')]">
+  </div>
+  <div style="clear:both;"></div>
+
+
+
+</div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+  <button type="button" class="btn btn-disabled" id="save">Save changes</button>
+</div>
+</div>
+</div>
+</div>
 </script>
 
 
 
-  <script type="text/javascript" src="/js/jquery.js"></script>
-  <script type="text/javascript" src="/js/bootstrap.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/bootstrap.js"></script>
 
-  <script type="text/javascript" src="/js/underscore.js"></script>
-  <script type="text/javascript" src="/js/backbone.js"></script>
-  <script type="text/javascript" src="/js/main.js"></script>
+<script type="text/javascript" src="/js/underscore.js"></script>
+<script type="text/javascript" src="/js/backbone.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
 </body>
 </html>

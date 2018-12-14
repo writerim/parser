@@ -313,4 +313,8 @@ news_collection.fetch ()
 $(document).ready(function(){
   new NEWS_LIST( news_collection )
   new RULES_LIST( rules )
+
+  $('#search').on("keyup" , function(){
+    news_collection.fetch({ url : news_collection.url + "?search=" + $(this).val() })
+  })
 })

@@ -46,7 +46,8 @@ func (p *Parser) get_js(c echo.Context) error {
 func (p *Parser) get_all_rules() []Rules {
 	rules := []Rules{}
 
-	res, err := p.query("select * from rules")
+	sql := "select * from rules"
+	res, err := p.query(sql)
 	if err != nil {
 		return rules
 	}
@@ -69,10 +70,15 @@ func (p *Parser) get_all_rules() []Rules {
 	return rules
 }
 
-func (p *Parser) get_all_news() []News {
+func (p *Parser) get_all_news(filter_title string) []News {
 	news := []News{}
 
-	res, err := p.query("select * from news")
+	sql := "select * from news"
+	if filter_title != "" {
+		sql = fmt.Sprintf("select * from news where title like '%%%s%%'", strings.Replace(filter_title, "'", "\\'", -1))
+	}
+
+	res, err := p.query(sql)
 	if err != nil {
 		return news
 	}
@@ -94,7 +100,7 @@ func (p *Parser) api_get_rule(c echo.Context) error {
 }
 
 func (p *Parser) api_get_news(c echo.Context) error {
-	return c.JSON(http.StatusCreated, p.get_all_news())
+	return c.JSON(http.StatusCreated, p.get_all_news(c.QueryParam("search")))
 }
 
 func (p *Parser) api_set_rule(c echo.Context) error {
