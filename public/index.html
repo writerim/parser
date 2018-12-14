@@ -314,7 +314,7 @@
                       <div class="wizard-step">
                           <div class="form-group">
                             <label>Путь до блока одной новости</label>
-                            <input type="text" class="form-control" id="main_path" placeholder="//.news"
+                            <input type="text" class="form-control" id="main_path" placeholder="//*[contains(@class,'news')]"
                             value="<%= rule.get('main_path') %>"
                             >
                           </div>
@@ -325,7 +325,7 @@
                             <label>Путь до изображения</label>
                             <input type="text" 
                             value="<%= rule.get('img_path') %>"
-                            class="form-control" id="img_path" placeholder="//img">
+                            class="form-control" id="img_path" placeholder="//*[contains(@class,'img')]">
                             <small class="text-muted">*Путь относительно от блока новости</small>
                           </div>
                           <div style="clear:both;"></div>
@@ -359,7 +359,7 @@
                             <label>Путь до названия новости</label>
                             <input type="text" 
                             value="<%= rule.get('title_path') %>"
-                            class="form-control" id="title_path" placeholder="//.title">
+                            class="form-control" id="title_path" placeholder="//*[contains(@class,'title')]">
                           </div>
                           <div style="clear:both;"></div>
 
@@ -379,7 +379,7 @@
                             <label>Путь до ссылки на новость</label>
                             <input type="text" 
                             value="<%= rule.get('href_path') %>"
-                            class="form-control" id="href_path" placeholder="//.title">
+                            class="form-control" id="href_path" placeholder="//*[contains(@class,'news')]/@href">
                           </div>
                           <div style="clear:both;"></div>
 
@@ -398,7 +398,7 @@
                           <label>Путь до cодержания новости</label>
                           <input type="text" 
                           value="<%= rule.get('desc_path') %>"
-                          class="form-control" id="desc_path" placeholder="//.title">
+                          class="form-control" id="desc_path" placeholder="//*[contains(@class,'news')]">
                         </div>
                         <div style="clear:both;"></div>
 
